@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="pl.edu.agh.ki.bd.htmlIndexer.model">
+
+	<class name="Sentence">
+		<id name="id" column="sentenceId">
+			<generator class="native" />
+		</id>
+		<property name="content" type="text" />
+		<many-to-one name="processedUrl" column="processedUrlId"
+			not-null="true" lazy="false" fetch="join" />
+		<set name="words" inverse="false" table="WordSentences">
+			<key column="sentenceId"></key>
+			<many-to-many column="content" class="Word"></many-to-many>
+		</set>
+
+	</class>
+
+</hibernate-mapping>
+
+
+
