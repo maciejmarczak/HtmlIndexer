@@ -33,12 +33,14 @@ public class Index {
 
 		Session session = HibernateUtils.getSession();
 		Transaction transaction = session.beginTransaction();
+		
+		session.save(processedUrl);
 
 		for (Element element : elements) {
 			if (element.ownText().trim().length() > 1) {
 				for (String sentenceContent : element.ownText().split("\\. ")) {
 					Set<Word> words = buildWords(session, sentenceContent);
-					Sentence sentence = new Sentence(sentenceContent, words, processedUrl);
+					Sentence sentence = buildSentence(session, sentenceContent, words, processedUrl);
 					sentences.add(sentence);
 				}
 			}
@@ -46,7 +48,7 @@ public class Index {
 
 		processedUrl.setSentences(sentences);
 
-		session.persist(processedUrl);
+		session.update(processedUrl);
 
 		transaction.commit();
 		session.close();
@@ -97,6 +99,21 @@ public class Index {
 
 		return result;
 	}
+	
+	public int countWordOccurences(String word) {
+		int occurences = 0;
+		
+		Session session = HibernateUtils.getSession();
+		Transaction transaction = session.beginTransaction();
+		
+		Word w = session.get(Word.class, word.toLowerCase());
+		occurences = w.getSentences().size();
+		
+		transaction.commit();
+		session.close();
+		
+		return occurences;
+	}
 
 	private Set<Word> buildWords(Session session, String sentence) {
 		Set<Word> result = new HashSet<>();
@@ -117,6 +134,19 @@ public class Index {
 			result.add(word);
 		}
 		return result;
+	}
+	
+	private Sentence buildSentence(Session session, String sentenceContent, Set<Word> words, ProcessedUrl processedUrl) {
+		Sentence sentence;
+		
+		try {
+			sentence = session.createQuery("from Sentence s where s.content = :sentenceContent", Sentence.class).setParameter("sentenceContent", sentenceContent).getSingleResult();
+		} catch (NoResultException nre) {
+			sentence = new Sentence(sentenceContent, words, processedUrl);
+			session.persist(sentence);
+		}
+		
+		return sentence;
 	}
 
 }

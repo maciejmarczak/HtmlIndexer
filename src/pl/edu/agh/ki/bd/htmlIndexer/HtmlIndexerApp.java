@@ -50,6 +50,10 @@ public class HtmlIndexerApp {
 				for (Object[] row : indexer.findUrlsBySentenceNumber()) {
 					System.out.println("URL: " + row[0] + "\tNUMBER OF SENTENCES: " + row[1]);
 				}
+			} else if (command.startsWith("count ")) {
+				String word = command.substring(6);
+				int occurences = indexer.countWordOccurences(word);
+				System.out.println("WORD: " + word + "\t\tOCCURENCES: " + occurences + "\n");
 			}
 
 			System.out.println("took " + (new Date().getTime() - startAt) + " ms");
