@@ -11,7 +11,7 @@
         </id>
         <property name="url" type="text"/>
         <property name="date" type="date"/>
-        <list name="sentences" inverse="false" cascade="all">
+        <list name="sentences" inverse="false" cascade="merge">
         	<key column="processedUrlId"/>
         	<list-index column="idx"></list-index>
         	<one-to-many class="Sentence"/>

@@ -41,6 +41,8 @@ public class Index {
 				for (String sentenceContent : element.ownText().split("\\. ")) {
 					Set<Word> words = buildWords(session, sentenceContent);
 					Sentence sentence = buildSentence(session, sentenceContent, words, processedUrl);
+					if (sentence == null) continue;
+					
 					sentences.add(sentence);
 				}
 			}
@@ -106,8 +108,9 @@ public class Index {
 		Session session = HibernateUtils.getSession();
 		Transaction transaction = session.beginTransaction();
 		
-		Word w = session.get(Word.class, word.toLowerCase());
-		occurences = w.getSentences().size();
+		String hql = "select w.sentences.size as ws from Word w where w.content = :word order by ws desc";
+
+		occurences = (int) session.createQuery(hql).setParameter("word", word).getSingleResult();
 		
 		transaction.commit();
 		session.close();
@@ -137,15 +140,17 @@ public class Index {
 	}
 	
 	private Sentence buildSentence(Session session, String sentenceContent, Set<Word> words, ProcessedUrl processedUrl) {
-		Sentence sentence;
 		
 		try {
-			sentence = session.createQuery("from Sentence s where s.content = :sentenceContent", Sentence.class).setParameter("sentenceContent", sentenceContent).getSingleResult();
+			session.createQuery("from Sentence s where s.content = :sentenceContent and s.processedUrl.id = :urlId", Sentence.class)
+				.setParameter("sentenceContent", sentenceContent).setParameter("urlId", processedUrl.getId()).getSingleResult();
+			return null;
 		} catch (NoResultException nre) {
-			sentence = new Sentence(sentenceContent, words, processedUrl);
-			session.persist(sentence);
+			
 		}
 		
+		Sentence sentence = new Sentence(sentenceContent, words, processedUrl);
+		session.persist(sentence);
 		return sentence;
 	}
 

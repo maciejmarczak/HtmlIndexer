@@ -13,7 +13,7 @@ public class HtmlIndexerApp {
 		HibernateUtils.getSession().close();
 
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-		Index indexer = new Index();
+		Index indexer = new NativeSqlDrivenIndex();
 
 		while (true) {
 			System.out.println("\nHtmlIndexer [? for help] > : ");
